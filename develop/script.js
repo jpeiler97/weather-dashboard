@@ -1,13 +1,15 @@
 //a0f17e1133e54602c691b418055fe0a4
 
-var apiUrl = 'https://api.openweathermap.org/data/2.5/weather?';
-var apiKey = 'a0f17e1133e54602c691b418055fe0a4';
+var dayBaseUrl = 'https://api.openweathermap.org/data/2.5/weather?q=';
+var forecastBaseUrl = 'https://api.openweathermap.org/data/2.5/forecast?q=';
+var apiKey = '7d741b773e77f4c369c50ab17679eb30';
 
 var city = '';
 var searchForm = $('#search-bar');
 var searchBtn = $('#search-button');
 var cityText = $('.city-text');
 var currentDate = $('#current-date');
+var forecastDay = $('.forecast-day');
 var recentSearchLength = 12;
 var recentCities = JSON.parse(localStorage.getItem('recentCities') || '[]');
 var newCity;
@@ -17,7 +19,7 @@ currentDate.text(moment().format('MM/DD/YY'));
 
 function searchClick() {}
 
-function getApi(url) {
+function getDayWeather(url) {
 	fetch(url)
 		.then(function(response) {
 			return response.json();
@@ -28,6 +30,22 @@ function getApi(url) {
 			$('#day-temp').text(data.main.temp);
 			$('#day-humidity').text(data.main.humidity);
 			$('#day-wind-speed').text(data.wind.speed + ' MPH');
+		});
+}
+
+function getForecast(url) {
+	fetch(url)
+		.then(function(response) {
+			console.log(response);
+			return response.json();
+		})
+		.then(function(data) {
+			console.log(data);
+			forecastDay.each(function(i) {
+				var forecastDate = moment().add(i + 1, 'days').format('MM/DD/YY');
+				$('.weather-date').text(forecastDate);
+				$('.temp-data').text(data.list[i + 1].weather.icon);
+			});
 		});
 }
 
@@ -47,20 +65,19 @@ searchBtn.on('click', function() {
 		localStorage.setItem('recentCities', JSON.stringify(recentCities));
 		recentSearches.prepend(`<button class= "list-group-item city-button">${recentCities[0]}</button>`);
 		$('.city-button').on('click', function() {
-			$(this).attr('style', 'background-color: red');
+			newCity = $(this).text();
+			displayOneDay();
 		});
 		searchForm.val('');
 		displayOneDay();
 	}
-
-	// url = apiUrl + 'q=' + city + '&appid=' + apiKey;
-	// console.log(url);
-	// getApi(url);
 });
 
 function displayOneDay() {
-	var url = apiUrl + 'q=' + newCity + '&appid=' + apiKey;
-	getApi(url);
+	var dayUrl = dayBaseUrl + newCity + '&appid=' + apiKey;
+	var forecastUrl = forecastBaseUrl + newCity + '&appid=' + apiKey;
+	getDayWeather(dayUrl);
+	getForecast(forecastUrl);
 }
 
 function displayCities() {
