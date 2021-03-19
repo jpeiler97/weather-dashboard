@@ -2,6 +2,7 @@
 
 var dayBaseUrl = 'https://api.openweathermap.org/data/2.5/weather?q=';
 var forecastBaseUrl = 'https://api.openweathermap.org/data/2.5/forecast?q=';
+var iconBaseUrl = 'http://openweathermap.org/img/w/';
 var apiKey = '7d741b773e77f4c369c50ab17679eb30';
 
 var city = '';
@@ -9,7 +10,8 @@ var searchForm = $('#search-bar');
 var searchBtn = $('#search-button');
 var cityText = $('.city-text');
 var currentDate = $('#current-date');
-var forecastDay = $('.forecast-day');
+var fiveDay = $('.five-day');
+
 var recentSearchLength = 12;
 var recentCities = JSON.parse(localStorage.getItem('recentCities') || '[]');
 var newCity;
@@ -25,7 +27,6 @@ function getDayWeather(url) {
 			return response.json();
 		})
 		.then(function(data) {
-			console.log(data);
 			cityText.text(newCity + ' ');
 			$('#day-temp').text(data.main.temp);
 			$('#day-humidity').text(data.main.humidity);
@@ -36,16 +37,40 @@ function getDayWeather(url) {
 function getForecast(url) {
 	fetch(url)
 		.then(function(response) {
-			console.log(response);
 			return response.json();
 		})
 		.then(function(data) {
-			console.log(data);
-			forecastDay.each(function(i) {
-				var forecastDate = moment().add(i + 1, 'days').format('MM/DD/YY');
-				$('.weather-date').text(forecastDate);
-				$('.temp-data').text(data.list[i + 1].weather.icon);
-			});
+			console.log('getting data');
+			fiveDay.children().remove();
+			for (var i = 0; i < data.list.length; i++) {
+				var timeCheck = data.list[i].dt_txt.search('15:00:00');
+				if (timeCheck > -1) {
+					var forecastDay = $('<div class="card col text-white bg-primary mx-1 forecast-day">');
+					var forecast = data.list[i];
+					var temp = forecast.main.temp;
+					var humidity = forecast.main.humidity;
+					var weather = forecast.weather;
+					var wind = forecast.wind;
+					var day = moment(forecast.dt_txt).format('dddd, MMMM Do');
+					var dayText = $('<div class= "row-3 my-3 card-title day-text">');
+					var tempText = $('<div class= "row-3 my-3 card-title temp-text">');
+					var humidityText = $('<div class= "row-3 my-3 card-title humidity-text">');
+					var weatherIcon = $('<div class= "row-3 my-3 card-title weather-icon">');
+					var windText = $('<div class= "row-3 my-3 card-title wind-text">');
+
+					dayText.text(day);
+					tempText.text('Temperature: ' + temp);
+					humidityText.text('Humidity: ' + humidity + '%');
+					windText.text('Wind Speed: ' + wind.speed + 'MPH');
+					forecastDay.append(dayText);
+					forecastDay.append(tempText);
+					forecastDay.append(humidityText);
+					forecastDay.append(weatherIcon);
+					forecastDay.append(windText);
+				}
+
+				fiveDay.append(forecastDay);
+			}
 		});
 }
 
@@ -84,7 +109,7 @@ function displayCities() {
 	for (i = 0; i < recentSearchLength; i++) {
 		if (recentCities[i] !== undefined) {
 			recentSearches.append(`<button class= "list-group-item city-button">${recentCities[i]}</button>`);
-			$('.city-button').on('click', function() {
+			$('.city-button').eq(i).on('click', function() {
 				newCity = $(this).text();
 				displayOneDay();
 			});
