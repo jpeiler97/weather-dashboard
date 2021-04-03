@@ -11,7 +11,6 @@ For this assignment I was to create a dashboard for a user that gets weather dat
 - Web APIs
 
 ## Links and Screenshots
-Published page:
 [Link to Deployed Website](https://jpeiler97.github.io/weather-dashboard/)
 
 Screenshots:
